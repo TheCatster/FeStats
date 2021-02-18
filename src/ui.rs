@@ -3,13 +3,17 @@ use crate::{
     formula::{attempt_formula, retrieve_formula},
 };
 
-use tui::{
-    backend::Backend,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Color, Modifier, Style},
-    text::{Span, Spans, Text},
-    widgets::{Block, Borders, List, ListItem, Paragraph, Tabs, Wrap},
-    Frame,
+use {
+    anyhow::Result,
+    std::convert::TryInto,
+    tui::{
+        backend::Backend,
+        layout::{Alignment, Constraint, Direction, Layout, Rect},
+        style::{Color, Modifier, Style},
+        text::{Span, Spans, Text},
+        widgets::{Block, Borders, List, ListItem, Paragraph, Tabs, Wrap},
+        Frame,
+    },
 };
 
 use unicode_width::UnicodeWidthStr;
@@ -65,17 +69,22 @@ where
     draw_output(f, app, chunks[1]);
 }
 
-fn draw_output<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
+fn draw_output<B>(f: &mut Frame<B>, app: &mut App, area: Rect) -> Result<()>
 where
     B: Backend,
 {
     let formula_name = app.current_items().current_item().to_owned();
+    let current_inputs = app.current_entered_input_paragraph();
+    if current_inputs.len() > 0 && current_inputs[0] != formula_name {
+        app.current_input().drain(..);
+        app.current_entered_input().drain(..);
+    }
     let inputs = retrieve_formula(formula_name);
     let outputs = &attempt_formula(
         app.current_items().current_item(),
         app.current_entered_input_paragraph().to_vec(),
         app,
-    );
+    )?;
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .margin(2)
@@ -88,6 +97,7 @@ where
 
     draw_inputs(f, app, chunks[0], inputs);
     draw_formula(f, chunks[1], &formula_name, outputs);
+    Ok(())
 }
 
 fn draw_list<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
@@ -141,14 +151,31 @@ fn draw_inputs<B>(f: &mut Frame<B>, app: &mut App, area: Rect, variables: Vec<St
 where
     B: Backend,
 {
-    let paragraph = app.current_input_paragraph().to_owned();
-    let input = Paragraph::new(paragraph)
-        .style(match app.input_mode {
-            InputMode::Normal => Style::default(),
-            InputMode::Editing => Style::default().fg(Color::Yellow),
-        })
-        .block(Block::default().borders(Borders::ALL).title("Input"));
-    f.render_widget(input, area);
+    let mut constraints: Vec<Constraint> = vec![]; // Constraint::Percentage(100)
+
+    for x in &variables {
+        constraints.push(Constraint::Percentage(
+            (100 / &variables.len()).try_into().unwrap(),
+        ));
+    }
+
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(constraints.as_ref())
+        .split(area);
+
+    for y in &variables {
+        let paragraph = app.current_input_paragraph().to_owned();
+        let input = Paragraph::new(paragraph)
+            .style(match app.input_mode {
+                InputMode::Normal => Style::default(),
+                InputMode::Editing => Style::default().fg(Color::Yellow),
+            })
+            .block(Block::default().borders(Borders::ALL).title(y.as_str()));
+        let index = &variables.iter().position(|x| x == y).unwrap();
+        f.render_widget(input, chunks[*index]);
+    }
+
     match app.input_mode {
         InputMode::Normal =>
             // Hide the cursor. `Frame` does this by default, so we don't need to do anything here

@@ -69,6 +69,13 @@ fn main() -> Result<()> {
                 },
                 InputMode::Editing => match input {
                     Key::Char('\n') => {
+                        let current_formula = *app.current_items().current_item();
+                        if app.current_entered_input().len() == 0
+                            || &app.current_entered_input()[0] != current_formula
+                        {
+                            app.current_entered_input()
+                                .push(String::from(current_formula));
+                        }
                         let text = String::from(app.current_input_paragraph()); //.drain(..).collect();
                         app.current_entered_input().push(text);
                         app.input_mode = InputMode::Normal;

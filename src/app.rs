@@ -57,8 +57,6 @@ impl<'a> App<'a> {
                     "2-Sample t Interval",
                     "1-Prop z Interval",
                     "2-Prop z Interval",
-                    "Linear Reg t Interval",
-                    "Multiple Reg Interval",
                 ]),
                 StatefulList::with_items(vec![
                     "z Test",
@@ -70,10 +68,7 @@ impl<'a> App<'a> {
                     "χ2 GOF",
                     "χ2 2-way Test",
                     "2-Sample F Test",
-                    "Linear Reg t Test",
-                    "Multiple Reg Tests",
                     "ANOVA",
-                    "ANOVA 2-Way",
                 ]),
                 StatefulList::with_items(vec![
                     "Linear Regression (mx+b)",
