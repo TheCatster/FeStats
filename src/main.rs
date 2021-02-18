@@ -1,6 +1,7 @@
 use crate::{
     app::{App, InputMode},
     event::{Event, Events},
+    formula::attempt_formula,
     ui::draw_main_layout,
 };
 
@@ -11,6 +12,7 @@ use tui::{backend::TermionBackend, Terminal};
 
 mod app;
 mod event;
+mod formula;
 mod ui;
 mod util;
 
@@ -29,8 +31,8 @@ fn main() -> Result<()> {
         // Draw UI
         terminal.draw(|f| draw_main_layout(f, &mut app))?;
         // Handle input
-        if let Event::Input(input) = events.next()? {
-            match app.input_mode {
+        match events.next()? {
+            Event::Input(input) => match app.input_mode {
                 InputMode::Normal => match input {
                     Key::Char('i') => {
                         app.input_mode = InputMode::Editing;
@@ -41,6 +43,18 @@ fn main() -> Result<()> {
                     }
                     Key::Right => {
                         app.on_right();
+                    }
+                    Key::Down => {
+                        app.current_items().position("next");
+                    }
+                    Key::Up => {
+                        app.current_items().position("previous");
+                    }
+                    Key::Char('j') => {
+                        app.current_items().position("next");
+                    }
+                    Key::Char('k') => {
+                        app.current_items().position("previous");
                     }
                     Key::Char('h') => {
                         app.on_left();
@@ -55,13 +69,16 @@ fn main() -> Result<()> {
                 },
                 InputMode::Editing => match input {
                     Key::Char('\n') => {
-                        app.messages.push(app.input.drain(..).collect());
+                        let text = String::from(app.current_input_paragraph()); //.drain(..).collect();
+                        app.current_entered_input().push(text);
+                        app.input_mode = InputMode::Normal;
+                        events.enable_exit_key();
                     }
                     Key::Char(c) => {
-                        app.input.push(c);
+                        app.current_input().push(c);
                     }
                     Key::Backspace => {
-                        app.input.pop();
+                        app.current_input().pop();
                     }
                     Key::Esc => {
                         app.input_mode = InputMode::Normal;
@@ -69,7 +86,8 @@ fn main() -> Result<()> {
                     }
                     _ => {}
                 },
-            }
+            },
+            Event::Tick => {}
         }
         if app.should_quit {
             break Ok(());

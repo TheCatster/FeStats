@@ -1,11 +1,14 @@
-use super::app::{App, InputMode};
+use crate::{
+    app::{App, InputMode},
+    formula::{attempt_formula, retrieve_formula},
+};
 
 use tui::{
     backend::Backend,
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Span, Spans, Text},
-    widgets::{Block, Borders, List, ListItem, Paragraph, Tabs},
+    widgets::{Block, Borders, List, ListItem, Paragraph, Tabs, Wrap},
     Frame,
 };
 
@@ -40,146 +43,106 @@ where
                 .bg(Color::Black),
         );
     f.render_widget(tabs, chunks[0]);
-    match app.tabs.index {
-        0 => draw_basics_tab(f, app, chunks[1]),
-        1 => draw_probability_tab(f, app, chunks[1]),
-        2 => draw_tests_tab(f, app, chunks[1]),
-        3 => draw_regressions_tab(f, app, chunks[1]),
-        _ => {}
-    };
+
+    draw_body(f, app, chunks[1]);
 }
 
-fn draw_basics_tab<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
+fn draw_body<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
 where
     B: Backend,
 {
     let chunks = Layout::default()
-        .direction(Direction::Vertical)
+        .direction(Direction::Horizontal)
         .margin(2)
-        .constraints(
-            [
-                Constraint::Length(1),
-                Constraint::Length(3),
-                Constraint::Min(1),
-            ]
-            .as_ref(),
-        )
+        .constraints([Constraint::Percentage(30), Constraint::Percentage(70)].as_ref())
         .split(area);
-    let block = Block::default().borders(Borders::ALL).title("Basics");
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(app.current_title());
     f.render_widget(block, area);
 
-    draw_help(f, app, chunks[0]);
-
-    draw_input(f, app, chunks[1]);
-
-    draw_messages(f, app, chunks[2]);
+    draw_list(f, app, chunks[0]);
+    draw_output(f, app, chunks[1]);
 }
 
-fn draw_probability_tab<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
+fn draw_output<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
 where
     B: Backend,
 {
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .margin(2)
-        .constraints([Constraint::Min(1)].as_ref())
-        .split(area);
-    let block = Block::default().borders(Borders::ALL).title("Probability");
-    f.render_widget(block, area);
-
-    draw_paragraph(f, app, chunks[0]);
-}
-
-fn draw_tests_tab<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
-where
-    B: Backend,
-{
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .margin(2)
-        .constraints([Constraint::Min(1)].as_ref())
-        .split(area);
-    let block = Block::default().borders(Borders::ALL).title("Tests");
-    f.render_widget(block, area);
-
-    draw_paragraph(f, app, chunks[0]);
-}
-
-fn draw_regressions_tab<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
-where
-    B: Backend,
-{
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .margin(2)
-        .constraints([Constraint::Min(1)].as_ref())
-        .split(area);
-    let block = Block::default().borders(Borders::ALL).title("Regressions");
-    f.render_widget(block, area);
-
-    draw_paragraph(f, app, chunks[0]);
-}
-
-fn draw_help<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
-where
-    B: Backend,
-{
-    let (msg, style) = match app.input_mode {
-        InputMode::Normal => (
-            vec![
-                Span::raw("Press "),
-                Span::styled("q", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to exit, "),
-                Span::styled("i", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to start editing."),
-            ],
-            Style::default().add_modifier(Modifier::RAPID_BLINK),
-        ),
-        InputMode::Editing => (
-            vec![
-                Span::raw("Press "),
-                Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to stop editing, "),
-                Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to record the message"),
-            ],
-            Style::default(),
-        ),
-    };
-    let mut text = Text::from(Spans::from(msg));
-    text.patch_style(style);
-    let help_message = Paragraph::new(text);
-    f.render_widget(help_message, area);
-}
-
-fn draw_paragraph<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
-where
-    B: Backend,
-{
-    let (msg, style) = (
-        vec![
-            Span::raw("This"),
-            Span::styled(" is", Style::default().add_modifier(Modifier::BOLD)),
-            Span::raw(" a paragraph of"),
-            Span::styled(
-                " INFORMATION",
-                Style::default().add_modifier(Modifier::BOLD),
-            ),
-            Span::raw(" and nothing else."),
-        ],
-        Style::default().add_modifier(Modifier::RAPID_BLINK),
+    let formula_name = app.current_items().current_item().to_owned();
+    let inputs = retrieve_formula(formula_name);
+    let outputs = &attempt_formula(
+        app.current_items().current_item(),
+        app.current_entered_input_paragraph().to_vec(),
+        app,
     );
-    let mut text = Text::from(Spans::from(msg));
-    text.patch_style(style);
-    let help_message = Paragraph::new(text);
-    f.render_widget(help_message, area);
+    let chunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .margin(2)
+        .constraints([Constraint::Percentage(30), Constraint::Percentage(70)].as_ref())
+        .split(area);
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(*app.current_items().current_item());
+    f.render_widget(block, area);
+
+    draw_inputs(f, app, chunks[0], inputs);
+    draw_formula(f, chunks[1], &formula_name, outputs);
 }
 
-fn draw_input<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
+fn draw_list<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
 where
     B: Backend,
 {
-    let input = Paragraph::new(app.input.as_ref())
+    let chunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Percentage(100)].as_ref())
+        .split(area);
+
+    let items: Vec<ListItem> = app
+        .current_items()
+        .items
+        .iter()
+        .map(|i| ListItem::new(Spans::from(*i)).style(Style::default()))
+        .collect();
+
+    let items = List::new(items)
+        .block(Block::default().borders(Borders::ALL).title("List"))
+        .highlight_style(
+            Style::default()
+                .bg(Color::Black)
+                .add_modifier(Modifier::BOLD),
+        )
+        .highlight_symbol(">> ");
+
+    f.render_stateful_widget(items, chunks[0], &mut app.current_items().state);
+}
+
+fn draw_formula<B>(f: &mut Frame<B>, area: Rect, formula: &str, outputs: &str)
+where
+    B: Backend,
+{
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(100)].as_ref())
+        .split(area);
+    let block = Block::default().borders(Borders::ALL).title(formula);
+
+    let mut text = Text::from(Spans::from(format!("{}", outputs)));
+    let formula_output = Paragraph::new(text)
+        .block(Block::default().borders(Borders::ALL).title("Output"))
+        .style(Style::default())
+        .alignment(Alignment::Center)
+        .wrap(Wrap { trim: true });
+    f.render_widget(formula_output, chunks[0]);
+}
+
+fn draw_inputs<B>(f: &mut Frame<B>, app: &mut App, area: Rect, variables: Vec<String>)
+where
+    B: Backend,
+{
+    let paragraph = app.current_input_paragraph().to_owned();
+    let input = Paragraph::new(paragraph)
         .style(match app.input_mode {
             InputMode::Normal => Style::default(),
             InputMode::Editing => Style::default().fg(Color::Yellow),
@@ -195,7 +158,7 @@ where
             // Make the cursor visible and ask tui-rs to put it at the specified coordinates after rendering
             f.set_cursor(
                 // Put cursor past the end of the input text
-                area.x + app.input.width() as u16 + 1,
+                area.x + app.current_input().width() as u16 + 1,
                 // Move one line down, from the border to the input line
                 area.y + 1,
             )
@@ -203,20 +166,20 @@ where
     }
 }
 
-fn draw_messages<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
-where
-    B: Backend,
-{
-    let messages: Vec<ListItem> = app
-        .messages
-        .iter()
-        .enumerate()
-        .map(|(i, m)| {
-            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m)))];
-            ListItem::new(content)
-        })
-        .collect();
-    let messages =
-        List::new(messages).block(Block::default().borders(Borders::ALL).title("Messages"));
-    f.render_widget(messages, area);
-}
+// fn draw_messages<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
+// where
+//     B: Backend,
+// {
+//     let messages: Vec<ListItem> = app
+//         .messages
+//         .iter()
+//         .enumerate()
+//         .map(|(i, m)| {
+//             let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m)))];
+//             ListItem::new(content)
+//         })
+//         .collect();
+//     let messages =
+//         List::new(messages).block(Block::default().borders(Borders::ALL).title("Messages"));
+//     f.render_widget(messages, area);
+// }
