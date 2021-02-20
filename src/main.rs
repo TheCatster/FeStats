@@ -34,7 +34,7 @@ fn main() -> Result<()> {
         match events.next()? {
             Event::Input(input) => match app.input_mode {
                 InputMode::Normal => match input {
-                    Key::Char('i') => {
+                    Key::Char('\n') => {
                         app.input_mode = InputMode::Editing;
                         events.disable_exit_key();
                     }
@@ -45,16 +45,16 @@ fn main() -> Result<()> {
                         app.on_right();
                     }
                     Key::Down => {
-                        app.current_items().position("next");
+                        app.position("next");
                     }
                     Key::Up => {
-                        app.current_items().position("previous");
+                        app.position("previous");
                     }
                     Key::Char('j') => {
-                        app.current_items().position("next");
+                        app.position("next");
                     }
                     Key::Char('k') => {
-                        app.current_items().position("previous");
+                        app.position("previous");
                     }
                     Key::Char('h') => {
                         app.on_left();
@@ -70,22 +70,24 @@ fn main() -> Result<()> {
                 InputMode::Editing => match input {
                     Key::Char('\n') => {
                         let current_formula = *app.current_items().current_item();
-                        if app.current_entered_input().len() == 0
-                            || &app.current_entered_input()[0] != current_formula
+                        if app.current_stored_input().is_empty()
+                            || &app.current_stored_input()[0] != current_formula
                         {
-                            app.current_entered_input()
+                            app.current_stored_input().drain(..);
+                            app.current_input().0 = 0;
+                            app.current_stored_input()
                                 .push(String::from(current_formula));
                         }
-                        let text = String::from(app.current_input_paragraph()); //.drain(..).collect();
-                        app.current_entered_input().push(text);
+                        let text = String::from(app.current_input_text_ref()); //.drain(..).collect();
+                        app.current_stored_input().push(text);
                         app.input_mode = InputMode::Normal;
                         events.enable_exit_key();
                     }
                     Key::Char(c) => {
-                        app.current_input().push(c);
+                        app.current_input_text().push(c);
                     }
                     Key::Backspace => {
-                        app.current_input().pop();
+                        app.current_input_text().pop();
                     }
                     Key::Esc => {
                         app.input_mode = InputMode::Normal;
