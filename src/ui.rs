@@ -165,7 +165,7 @@ where
         .split(area);
 
     let current_input_index = if !app.current_stored_input().is_empty()
-        && app.current_stored_input().len() < constraints.len()
+        && app.current_stored_input().len() - 1 < constraints.len()
     {
         app.current_input().0 = app.current_stored_input().len() - 1;
         app.current_input().0
