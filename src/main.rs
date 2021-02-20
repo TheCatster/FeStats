@@ -1,7 +1,7 @@
 use crate::{
     app::{App, InputMode},
     event::{Event, Events},
-    formula::attempt_formula,
+    formula::{attempt_formula, retrieve_formula},
     ui::draw_main_layout,
 };
 
@@ -74,20 +74,61 @@ fn main() -> Result<()> {
                             || &app.current_stored_input()[0] != current_formula
                         {
                             app.current_stored_input().drain(..);
-                            app.current_input().0 = 0;
                             app.current_stored_input()
                                 .push(String::from(current_formula));
                         }
-                        let text = String::from(app.current_input_text_ref()); //.drain(..).collect();
+
+                        let inputs = retrieve_formula(current_formula);
+
+                        let current_input_index = if !app.current_stored_input().is_empty() {
+                            app.current_stored_input().len() - 1
+                        } else {
+                            0
+                        };
+
+                        if current_input_index == inputs.len() - 1
+                            && inputs.len() == app.current_stored_input().len()
+                        {
+                            let current_input = app.current_input();
+                            current_input.1.drain(..);
+                            current_input.1.push(String::new());
+                        }
+
+                        let current_input = &*app.current_input_text(current_input_index);
+                        let text = String::from(current_input); //.drain(..).collect();
                         app.current_stored_input().push(text);
                         app.input_mode = InputMode::Normal;
                         events.enable_exit_key();
                     }
                     Key::Char(c) => {
-                        app.current_input_text().push(c);
+                        let formula_name = app.current_items().current_item().to_owned();
+                        let inputs = retrieve_formula(formula_name);
+
+                        let current_input_index = if !app.current_stored_input().is_empty()
+                            && app.current_stored_input().len() - 1 < inputs.len()
+                        {
+                            app.current_stored_input().len() - 1
+                        } else {
+                            0
+                        };
+
+                        let current_input = app.current_input_text(current_input_index);
+                        current_input.push(c);
                     }
                     Key::Backspace => {
-                        app.current_input_text().pop();
+                        let formula_name = app.current_items().current_item().to_owned();
+                        let inputs = retrieve_formula(formula_name);
+
+                        let current_input_index = if !app.current_stored_input().is_empty()
+                            && app.current_stored_input().len() - 1 < inputs.len()
+                        {
+                            app.current_stored_input().len() - 1
+                        } else {
+                            0
+                        };
+
+                        let current_input = app.current_input_text(current_input_index);
+                        current_input.pop();
                     }
                     Key::Esc => {
                         app.input_mode = InputMode::Normal;

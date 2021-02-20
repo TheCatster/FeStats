@@ -7,7 +7,7 @@ pub enum InputMode {
 
 pub struct App<'a> {
     items: Vec<StatefulList<&'a str>>,
-    pub input: Vec<(usize, String)>,
+    pub input: Vec<(usize, Vec<String>)>,
     pub title: &'a str,
     pub input_mode: InputMode,
     pub entered_inputs: Vec<Vec<String>>,
@@ -20,10 +20,10 @@ impl<'a> App<'a> {
         App {
             title,
             input: vec![
-                (0, String::new()),
-                (0, String::new()),
-                (0, String::new()),
-                (0, String::new()),
+                (0, vec![String::new()]),
+                (0, vec![String::new()]),
+                (0, vec![String::new()]),
+                (0, vec![String::new()]),
             ],
             input_mode: InputMode::Normal,
             entered_inputs: vec![Vec::new(), Vec::new(), Vec::new(), Vec::new()],
@@ -100,7 +100,11 @@ impl<'a> App<'a> {
     }
 
     pub fn position(&mut self, position: &str) {
-        self.current_input().0 = 0;
+        let current_input = self.current_input();
+        current_input.0 = 0;
+        current_input.1.drain(..);
+        current_input.1.push(String::new());
+        self.current_stored_input().drain(..);
 
         let i = match position {
             "next" => match self.items[self.tabs.index].state.selected() {
@@ -133,20 +137,23 @@ impl<'a> App<'a> {
         self.tabs.titles[self.tabs.index]
     }
 
-    pub fn current_input(&mut self) -> &mut (usize, String) {
+    pub fn current_input(&mut self) -> &mut (usize, Vec<String>) {
         &mut self.input[self.tabs.index]
     }
 
-    pub fn current_input_text(&mut self) -> &mut String {
-        &mut self.input[self.tabs.index].1
+    pub fn current_input_text(&mut self, index: usize) -> &mut String {
+        if self.input[self.tabs.index].1.len() - 1 < index {
+            self.input[self.tabs.index].1.push(String::new());
+        }
+        &mut self.input[self.tabs.index].1[index]
     }
 
     pub fn current_stored_input(&mut self) -> &mut Vec<String> {
         &mut self.entered_inputs[self.tabs.index]
     }
 
-    pub fn current_input_text_ref(&mut self) -> &str {
-        &self.input[self.tabs.index].1
+    pub fn current_input_text_ref(&mut self) -> String {
+        self.input[self.tabs.index].1.join(" ")
     }
 
     pub fn current_stored_input_ref(&mut self) -> &Vec<String> {

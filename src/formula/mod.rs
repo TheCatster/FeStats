@@ -11,18 +11,16 @@ pub fn retrieve_formula(formula_name: &str) -> Vec<String> {
     match_formula_inputs(formula_name)
 }
 
-pub fn attempt_formula(formula_name: &str, input: Vec<String>, app: &mut App) -> Result<String> {
-    if input.is_empty() {
+pub fn attempt_formula(formula_name: &str, input: &Vec<String>) -> Result<String> {
+    if input.is_empty() || input.len() - 1 < retrieve_formula(formula_name).len() {
         Ok(String::from("All inputs are not filled yet."))
     } else {
         let formula = match_formula_equations(formula_name, input);
-        //app.current_input().drain(..);
-        //app.current_entered_input().drain(..);
         formula
     }
 }
 
-fn match_formula_equations(formula_name: &str, input: Vec<String>) -> Result<String> {
+fn match_formula_equations(formula_name: &str, input: &Vec<String>) -> Result<String> {
     match formula_name {
         // Probability Formulas
         "Factorial (!)" => Ok(format!("{}", "okay")),

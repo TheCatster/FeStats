@@ -75,15 +75,10 @@ where
 {
     let formula_name = app.current_items().current_item().to_owned();
     let current_inputs = app.current_stored_input_ref();
-    if current_inputs.len() > 0 && current_inputs[0] != formula_name {
-        app.current_input_text().drain(..);
-        app.current_stored_input().drain(..);
-    }
     let inputs = retrieve_formula(formula_name);
     let outputs = &attempt_formula(
         app.current_items().current_item(),
-        app.current_stored_input_ref().to_vec(),
-        app,
+        &app.current_stored_input_ref().to_vec(),
     )?;
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -167,15 +162,14 @@ where
     let current_input_index = if !app.current_stored_input().is_empty()
         && app.current_stored_input().len() - 1 < constraints.len()
     {
-        app.current_input().0 = app.current_stored_input().len() - 1;
-        app.current_input().0
+        app.current_stored_input().len() - 1
     } else {
-        app.current_input().0
+        0
     };
 
     for y in &variables {
-        let paragraph = app.current_input_text().to_owned();
         let index = &variables.iter().position(|x| x == y).unwrap();
+        let paragraph = app.current_input_text(*index).to_owned();
         let input = Paragraph::new(paragraph)
             .style(match app.input_mode {
                 InputMode::Normal => Style::default(),
@@ -199,18 +193,18 @@ where
 
         InputMode::Editing => {
             // Make the cursor visible and ask tui-rs to put it at the specified coordinates after rendering
-            select_next_input(f, app, chunks[current_input_index]);
+            select_next_input(f, app, chunks[current_input_index], current_input_index);
         }
     }
 }
 
-pub fn select_next_input<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
+pub fn select_next_input<B>(f: &mut Frame<B>, app: &mut App, area: Rect, input_index: usize)
 where
     B: Backend,
 {
     f.set_cursor(
         // Put cursor past the end of the input text
-        area.x + app.current_input_text().width() as u16 + 1,
+        area.x + app.current_input_text(input_index).width() as u16 + 1,
         // Move one line down, from the border to the input line
         area.y + 1,
     )
