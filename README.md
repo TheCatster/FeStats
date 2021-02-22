@@ -16,7 +16,9 @@ FeStats is a TUI statistics program, covering hypothesis tests, regressions, and
 
 - AUR: `paru -S festats`
 
-## To-Do:
+## Roadmap:
+
+- [ ] Major refactoring - initial versions are done with a "MVP" perspective
 
 - [ ] Handle most common statistics and probability formulas
 
