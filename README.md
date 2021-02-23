@@ -1,6 +1,6 @@
 <div id="festats-logo" align="center">
     <h1>FeStats</h1>
-    <h3>TUI Statistcs Program</h3>
+    <h3>TUI Statistics Program</h3>
 </div>
 
 ## About FeStats (read: IronStats)
