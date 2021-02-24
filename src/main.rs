@@ -80,19 +80,7 @@ fn main() -> Result<()> {
 
                         let inputs = retrieve_formula(current_formula);
 
-                        let current_input_index = if !app.current_stored_input().is_empty() {
-                            app.current_stored_input().len() - 1
-                        } else {
-                            0
-                        };
-
-                        if current_input_index == inputs.len() - 1
-                            && inputs.len() == app.current_stored_input().len()
-                        {
-                            let current_input = app.current_input();
-                            current_input.1.drain(..);
-                            current_input.1.push(String::new());
-                        }
+                        let current_input_index = app.current_stored_input().len();
 
                         let current_input = &*app.current_input_text(current_input_index);
                         let text = String::from(current_input); //.drain(..).collect();
