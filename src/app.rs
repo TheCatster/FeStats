@@ -7,7 +7,7 @@ pub enum InputMode {
 
 pub struct App<'a> {
     items: Vec<StatefulList<&'a str>>,
-    pub input: Vec<String>,
+    pub input: Vec<(usize, Vec<String>)>,
     pub title: &'a str,
     pub input_mode: InputMode,
     pub entered_inputs: Vec<Vec<String>>,
@@ -19,7 +19,12 @@ impl<'a> App<'a> {
     pub fn new(title: &'a str) -> App<'a> {
         App {
             title,
-            input: vec![String::new(), String::new(), String::new(), String::new()],
+            input: vec![
+                (0, vec![String::new()]),
+                (0, vec![String::new()]),
+                (0, vec![String::new()]),
+                (0, vec![String::new()]),
+            ],
             input_mode: InputMode::Normal,
             entered_inputs: vec![Vec::new(), Vec::new(), Vec::new(), Vec::new()],
             should_quit: false,
@@ -94,23 +99,64 @@ impl<'a> App<'a> {
         &mut self.items[self.tabs.index]
     }
 
+    pub fn position(&mut self, position: &str) {
+        let current_input = self.current_input();
+        current_input.0 = 0;
+        current_input.1.drain(..);
+        current_input.1.push(String::new());
+        self.current_stored_input().drain(..);
+
+        let i = match position {
+            "next" => match self.items[self.tabs.index].state.selected() {
+                Some(i) => {
+                    if i >= self.items[self.tabs.index].items.len() - 1 {
+                        0
+                    } else {
+                        i + 1
+                    }
+                }
+                None => 0,
+            },
+            "previous" => match self.items[self.tabs.index].state.selected() {
+                Some(i) => {
+                    if i == 0 {
+                        self.items[self.tabs.index].items.len() - 1
+                    } else {
+                        i - 1
+                    }
+                }
+                None => 0,
+            },
+            _ => unreachable!(),
+        };
+
+        self.items[self.tabs.index].state.select(Some(i));
+    }
+
     pub fn current_title(&mut self) -> &str {
         self.tabs.titles[self.tabs.index]
     }
 
-    pub fn current_input(&mut self) -> &mut String {
+    pub fn current_input(&mut self) -> &mut (usize, Vec<String>) {
         &mut self.input[self.tabs.index]
     }
 
-    pub fn current_entered_input(&mut self) -> &mut Vec<String> {
+    pub fn current_input_text(&mut self, index: usize) -> &mut String {
+        if self.input[self.tabs.index].1.len() - 1 < index {
+            self.input[self.tabs.index].1.push(String::new());
+        }
+        &mut self.input[self.tabs.index].1[index]
+    }
+
+    pub fn current_stored_input(&mut self) -> &mut Vec<String> {
         &mut self.entered_inputs[self.tabs.index]
     }
 
-    pub fn current_input_paragraph(&mut self) -> &str {
-        &self.input[self.tabs.index]
+    pub fn current_input_text_ref(&mut self) -> String {
+        self.input[self.tabs.index].1.join(" ")
     }
 
-    pub fn current_entered_input_paragraph(&mut self) -> &Vec<String> {
+    pub fn current_stored_input_ref(&mut self) -> &Vec<String> {
         &self.entered_inputs[self.tabs.index]
     }
 
@@ -127,10 +173,10 @@ impl<'a> App<'a> {
             'q' => {
                 self.should_quit = true;
             }
-            'b' => {
+            'p' => {
                 self.tabs.set_index(0);
             }
-            'p' => {
+            'i' => {
                 self.tabs.set_index(1);
             }
             't' => {

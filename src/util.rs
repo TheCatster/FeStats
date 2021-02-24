@@ -1,3 +1,4 @@
+use crate::app::App;
 use rand::distributions::{Distribution, Uniform};
 use rand::rngs::ThreadRng;
 use tui::widgets::ListState;
@@ -107,7 +108,17 @@ impl<T> StatefulList<T> {
         &self.items[i]
     }
 
-    pub fn position(&mut self, position: &str) {
+    pub fn current_item_index(&mut self) -> usize {
+        let i = match self.state.selected() {
+            Some(i) => i,
+            None => 0,
+        };
+        i
+    }
+
+    pub fn position(&mut self, position: &str, app: &mut App) {
+        app.current_stored_input().drain(..);
+        app.current_input().0 = 0;
         let i = match position {
             "next" => match self.state.selected() {
                 Some(i) => {

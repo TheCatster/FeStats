@@ -74,16 +74,11 @@ where
     B: Backend,
 {
     let formula_name = app.current_items().current_item().to_owned();
-    let current_inputs = app.current_entered_input_paragraph();
-    if current_inputs.len() > 0 && current_inputs[0] != formula_name {
-        app.current_input().drain(..);
-        app.current_entered_input().drain(..);
-    }
+    let current_inputs = app.current_stored_input_ref();
     let inputs = retrieve_formula(formula_name);
     let outputs = &attempt_formula(
         app.current_items().current_item(),
-        app.current_entered_input_paragraph().to_vec(),
-        app,
+        &app.current_stored_input_ref().to_vec(),
     )?;
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -164,15 +159,30 @@ where
         .constraints(constraints.as_ref())
         .split(area);
 
+    let current_input_index = if !app.current_stored_input().is_empty()
+        && app.current_stored_input().len() - 1 < constraints.len()
+    {
+        app.current_stored_input().len() - 1
+    } else {
+        0
+    };
+
     for y in &variables {
-        let paragraph = app.current_input_paragraph().to_owned();
+        let index = &variables.iter().position(|x| x == y).unwrap();
+        let paragraph = app.current_input_text(*index).to_owned();
         let input = Paragraph::new(paragraph)
             .style(match app.input_mode {
                 InputMode::Normal => Style::default(),
-                InputMode::Editing => Style::default().fg(Color::Yellow),
+                InputMode::Editing => {
+                    if &current_input_index == index {
+                        Style::default().fg(Color::Yellow)
+                    } else {
+                        Style::default()
+                    }
+                }
             })
+            .wrap(Wrap { trim: true })
             .block(Block::default().borders(Borders::ALL).title(y.as_str()));
-        let index = &variables.iter().position(|x| x == y).unwrap();
         f.render_widget(input, chunks[*index]);
     }
 
@@ -183,30 +193,19 @@ where
 
         InputMode::Editing => {
             // Make the cursor visible and ask tui-rs to put it at the specified coordinates after rendering
-            f.set_cursor(
-                // Put cursor past the end of the input text
-                area.x + app.current_input().width() as u16 + 1,
-                // Move one line down, from the border to the input line
-                area.y + 1,
-            )
+            select_next_input(f, app, chunks[current_input_index], current_input_index);
         }
     }
 }
 
-// fn draw_messages<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
-// where
-//     B: Backend,
-// {
-//     let messages: Vec<ListItem> = app
-//         .messages
-//         .iter()
-//         .enumerate()
-//         .map(|(i, m)| {
-//             let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m)))];
-//             ListItem::new(content)
-//         })
-//         .collect();
-//     let messages =
-//         List::new(messages).block(Block::default().borders(Borders::ALL).title("Messages"));
-//     f.render_widget(messages, area);
-// }
+pub fn select_next_input<B>(f: &mut Frame<B>, app: &mut App, area: Rect, input_index: usize)
+where
+    B: Backend,
+{
+    f.set_cursor(
+        // Put cursor past the end of the input text
+        area.x + app.current_input_text(input_index).width() as u16 + 1,
+        // Move one line down, from the border to the input line
+        area.y + 1,
+    )
+}
