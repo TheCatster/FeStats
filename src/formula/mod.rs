@@ -65,7 +65,16 @@ pub fn attempt_formula(formula_name: &str, inputs: &Vec<String>) -> Result<Strin
 fn match_formula_equations(formula_name: &str, input: &Vec<String>) -> Result<String> {
     match formula_name {
         // Probability Formulas
-        "Factorial (!)" => Ok(format!("{}", "test")),
+        "Factorial (!)" => {
+            let input = input[0].parse::<u64>();
+
+            match input {
+                Ok(input) => Ok(format!("{}", factorial(input)?)),
+                Err(_) => Ok(String::from(
+                    "The number must be an integer without a decimal. Please try again.",
+                )),
+            }
+        }
         "Permutations" => Ok(String::from("thats cool")),
         "Combinations" => Ok(String::from("ig idk")),
         "Normal Pdf" => Ok(String::from("empty")),

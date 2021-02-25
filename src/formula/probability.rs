@@ -1,8 +1,5 @@
-use {anyhow::Result, factorial::Factorial, std::fmt::Display};
+use {anyhow::Result, statrs::function};
 
-pub fn factorial<T>(n: T) -> Result<String>
-where
-    T: Display + Factorial,
-{
-    Ok(format!("{}", n.factorial()))
+pub fn factorial(n: u64) -> Result<String> {
+    Ok(format!("{}", function::factorial::factorial(n)))
 }
