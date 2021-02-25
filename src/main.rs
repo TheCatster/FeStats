@@ -38,13 +38,11 @@ fn main() -> Result<()> {
                         let current_formula = *app.current_items().current_item();
                         let current_input_index = app.current_stored_input().len();
                         let inputs = retrieve_formula(current_formula);
-                        let current_input = &*app.current_input_text(current_input_index);
-                        let text = String::from(current_input);
 
                         if current_input_index == inputs.len() + 1 {
                             app.current_stored_input().drain(..);
                             app.current_input().1.drain(..);
-                            app.current_input().1.push(String::from(&text));
+                            app.current_input().1.push(String::from(""));
                         }
 
                         app.input_mode = InputMode::Editing;

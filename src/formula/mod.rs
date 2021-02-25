@@ -11,20 +11,61 @@ pub fn retrieve_formula(formula_name: &str) -> Vec<String> {
     match_formula_inputs(formula_name)
 }
 
-pub fn attempt_formula(formula_name: &str, input: &Vec<String>) -> Result<String> {
-    if input.is_empty() || input.len() - 1 < retrieve_formula(formula_name).len() {
+pub fn attempt_formula(formula_name: &str, inputs: &Vec<String>) -> Result<String> {
+    if inputs.is_empty() || inputs.len() - 1 < retrieve_formula(formula_name).len() {
         Ok(String::from("All inputs are not filled yet."))
     } else {
-        let formula = match_formula_equations(formula_name, input);
-        //formula
-        Ok(input.join(" "))
+        if formula_name.contains("Regression") || formula_name.contains("Median-Media") {
+            let inputs: &Vec<Vec<String>> = &inputs
+                .iter()
+                .skip(1)
+                .map(|x| {
+                    String::from(x)
+                        .trim()
+                        .split(",")
+                        .map(|x| String::from(x))
+                        .collect()
+                })
+                .collect::<Vec<Vec<String>>>();
+            for input in inputs {
+                for entry in input {
+                    let entry = entry.trim().parse::<f64>();
+
+                    match entry {
+                        Ok(_) => {}
+                        Err(_) => {
+                            return (Ok(String::from(
+                                "Not all inputs are numbers. Please ensure all numbers are comma
+                                separated and enter them again.",
+                            )))
+                        }
+                    };
+                }
+            }
+            match_regressions_formula_equations(formula_name, &inputs[0], &inputs[1])
+        } else {
+            let inputs: &Vec<String> = &inputs.iter().skip(1).map(|x| String::from(x)).collect();
+            for input in inputs {
+                let input = input.trim().parse::<f64>();
+
+                match input {
+                    Ok(_) => {}
+                    Err(_) => {
+                        return (Ok(String::from(
+                            "Not all inputs are numbers. Please enter them again.",
+                        )))
+                    }
+                }
+            }
+            match_formula_equations(formula_name, inputs)
+        }
     }
 }
 
 fn match_formula_equations(formula_name: &str, input: &Vec<String>) -> Result<String> {
     match formula_name {
         // Probability Formulas
-        "Factorial (!)" => Ok(format!("{}", "okay")),
+        "Factorial (!)" => Ok(format!("{}", "test")),
         "Permutations" => Ok(String::from("thats cool")),
         "Combinations" => Ok(String::from("ig idk")),
         "Normal Pdf" => Ok(String::from("empty")),
@@ -32,8 +73,22 @@ fn match_formula_equations(formula_name: &str, input: &Vec<String>) -> Result<St
         // Intervals Formulas
 
         // Tests Formulas
+        _ => Ok(String::from("No formula found with that name!")),
+    }
+}
 
-        // Regressions Formulas
+fn match_regressions_formula_equations(
+    formula_name: &str,
+    list1: &Vec<String>,
+    list2: &Vec<String>,
+) -> Result<String> {
+    match formula_name {
+        "Linear Regression (mx+b)" => Ok(String::from("This would be your result")),
+        "Linear Regression (a+bx)" => Ok(String::from("This would be your result")),
+        "Median-Median Line" => Ok(String::from("This would be your result")),
+        "Quadratic Regression" => Ok(String::from("This would be your result")),
+        "Cubic Regression" => Ok(String::from("This would be your result")),
+        "Quartic Regression" => Ok(String::from("This would be your result")),
         _ => Ok(String::from("No formula found with that name!")),
     }
 }
