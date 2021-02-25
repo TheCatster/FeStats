@@ -39,7 +39,7 @@ fn main() -> Result<()> {
                         let current_input_index = app.current_stored_input().len();
                         let inputs = retrieve_formula(current_formula);
                         let current_input = &*app.current_input_text(current_input_index);
-                        let text = String::from(current_input); //.drain(..).collect();
+                        let text = String::from(current_input);
 
                         if current_input_index == inputs.len() + 1 {
                             app.current_stored_input().drain(..);
@@ -93,8 +93,8 @@ fn main() -> Result<()> {
 
                         let inputs = retrieve_formula(current_formula);
                         let current_input_index = app.current_stored_input().len();
-                        let current_input = &*app.current_input_text(current_input_index);
-                        let text = String::from(current_input); //.drain(..).collect();
+                        let current_input = &*app.current_input_text(current_input_index - 1);
+                        let text = String::from(current_input);
 
                         app.current_stored_input().push(text);
                         app.input_mode = InputMode::Normal;

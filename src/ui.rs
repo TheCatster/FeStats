@@ -78,7 +78,7 @@ where
     let inputs = retrieve_formula(formula_name);
     let outputs = &attempt_formula(
         app.current_items().current_item(),
-        &app.current_stored_input_ref().to_vec(),
+        &app.current_stored_input(),
     )?;
     let chunks = Layout::default()
         .direction(Direction::Horizontal)

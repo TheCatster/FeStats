@@ -16,7 +16,8 @@ pub fn attempt_formula(formula_name: &str, input: &Vec<String>) -> Result<String
         Ok(String::from("All inputs are not filled yet."))
     } else {
         let formula = match_formula_equations(formula_name, input);
-        formula
+        //formula
+        Ok(input.join(" "))
     }
 }
 
