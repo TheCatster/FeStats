@@ -35,6 +35,18 @@ fn main() -> Result<()> {
             Event::Input(input) => match app.input_mode {
                 InputMode::Normal => match input {
                     Key::Char('\n') => {
+                        let current_formula = *app.current_items().current_item();
+                        let current_input_index = app.current_stored_input().len();
+                        let inputs = retrieve_formula(current_formula);
+                        let current_input = &*app.current_input_text(current_input_index);
+                        let text = String::from(current_input); //.drain(..).collect();
+
+                        if current_input_index == inputs.len() + 1 {
+                            app.current_stored_input().drain(..);
+                            app.current_input().1.drain(..);
+                            app.current_input().1.push(String::from(&text));
+                        }
+
                         app.input_mode = InputMode::Editing;
                         events.disable_exit_key();
                     }
@@ -70,6 +82,7 @@ fn main() -> Result<()> {
                 InputMode::Editing => match input {
                     Key::Char('\n') => {
                         let current_formula = *app.current_items().current_item();
+
                         if app.current_stored_input().is_empty()
                             || &app.current_stored_input()[0] != current_formula
                         {
@@ -79,11 +92,10 @@ fn main() -> Result<()> {
                         }
 
                         let inputs = retrieve_formula(current_formula);
-
                         let current_input_index = app.current_stored_input().len();
-
                         let current_input = &*app.current_input_text(current_input_index);
                         let text = String::from(current_input); //.drain(..).collect();
+
                         app.current_stored_input().push(text);
                         app.input_mode = InputMode::Normal;
                         events.enable_exit_key();
