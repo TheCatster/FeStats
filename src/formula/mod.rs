@@ -2,8 +2,8 @@ use crate::app::App;
 use anyhow::Result;
 use probability::{
     get_binom_cdf, get_binom_pdf, get_chi_square_cdf, get_chi_square_pdf, get_combination,
-    get_factorial, get_inv_normal, get_normal_cdf, get_normal_pdf, get_permutation, get_t_cdf,
-    get_t_pdf,
+    get_f_cdf, get_f_pdf, get_factorial, get_geo_cdf, get_geo_pdf, get_inv_normal, get_normal_cdf,
+    get_normal_pdf, get_permutation, get_poisson_cdf, get_poisson_pdf, get_t_cdf, get_t_pdf,
 };
 
 pub mod distributions;
@@ -133,17 +133,15 @@ fn match_formula_equations(formula_name: &str, input: &Vec<String>) -> Result<St
             input[1].parse::<f64>()?,
             input[2].parse::<f64>()?,
         ),
-        // TODO: Can't find a formula for this yet.
-        // "Inverse t" => get_inv_t(input[0].parse::<f64>()?, input[1].parse::<f64>()?),
         "χ2 Pdf" => get_chi_square_pdf(input[0].parse::<f64>()?, input[1].parse::<f64>()?),
         "χ2 Cdf" => get_chi_square_cdf(
             input[0].parse::<f64>()?,
             input[1].parse::<f64>()?,
             input[2].parse::<f64>()?,
         ),
-        "Binomial Pmf" => {
+        "Binomial Pdf" => {
             let n = input[0].parse::<u64>();
-            let x = input[0].parse::<u64>();
+            let x = input[2].parse::<u64>();
 
             match n {
                 Ok(n) => match x {
@@ -157,13 +155,64 @@ fn match_formula_equations(formula_name: &str, input: &Vec<String>) -> Result<St
                 )),
             }
         }
-        "Binomial Cdf" => get_binom_cdf(
+        "Binomial Cdf" => {
+            let n = input[0].parse::<u64>();
+
+            match n {
+                Ok(n) => get_binom_cdf(
+                    n,
+                    input[1].parse::<f64>()?,
+                    input[2].parse::<f64>()?,
+                    input[3].parse::<f64>()?,
+                ),
+                Err(_) => Ok(String::from(
+                    "The number must be an integer without a decimal. Please try again.",
+                )),
+            }
+        }
+        "F Pdf" => get_f_pdf(
+            input[1].parse::<f64>()?,
+            input[2].parse::<f64>()?,
+            input[0].parse::<f64>()?,
+        ),
+        "F Cdf" => get_f_cdf(
+            input[0].parse::<f64>()?,
+            input[1].parse::<f64>()?,
+            input[2].parse::<f64>()?,
+            input[3].parse::<f64>()?,
+        ),
+        "Geometric Pdf" => {
+            let x = input[1].parse::<u64>();
+
+            match x {
+                Ok(x) => get_geo_pdf(input[0].parse::<f64>()?, x),
+                Err(_) => Ok(String::from(
+                    "The number must be an integer without a decimal. Please try again.",
+                )),
+            }
+        }
+        "Geometric Cdf" => get_geo_cdf(
             input[0].parse::<f64>()?,
             input[1].parse::<f64>()?,
             input[2].parse::<f64>()?,
         ),
-        // Intervals Formulas
+        "Poisson Pdf" => {
+            let x = input[1].parse::<u64>();
 
+            match x {
+                Ok(x) => get_poisson_pdf(input[0].parse::<f64>()?, x),
+                Err(_) => Ok(String::from(
+                    "The number must be an integer without a decimal. Please try again.",
+                )),
+            }
+        }
+        "Poisson Cdf" => get_poisson_cdf(
+            input[0].parse::<f64>()?,
+            input[1].parse::<f64>()?,
+            input[2].parse::<f64>()?,
+        ),
+
+        // Intervals Formulas
         // Tests Formulas
         _ => Ok(String::from("No formula found with that name!")),
     }
@@ -215,7 +264,7 @@ fn match_formula_inputs(formula_name: &str) -> Vec<String> {
         ],
         // TODO: Can't find a proper formula for this yet
         // "Inverse χ2" => vec![String::from("Area"), String::from("Deg of Freedom, df")],
-        "Binomial Pmf" => vec![
+        "Binomial Pdf" => vec![
             String::from("Num Trials, n"),
             String::from("Prob Success, p"),
             String::from("x"),
@@ -226,16 +275,6 @@ fn match_formula_inputs(formula_name: &str) -> Vec<String> {
             String::from("Lower Bound"),
             String::from("Upper Bound"),
         ],
-        "Inverse Binomial" => vec![
-            String::from("Cumulative Prob"),
-            String::from("Num Trials, n"),
-            String::from("Prob Success, p"),
-        ],
-        "Inverse Binomial N" => vec![
-            String::from("Cumulative Prob"),
-            String::from("Prob Success, p"),
-            String::from("Successes, x"),
-        ],
         "F Pdf" => vec![
             String::from("x"),
             String::from("Numerator df"),
@@ -244,11 +283,6 @@ fn match_formula_inputs(formula_name: &str) -> Vec<String> {
         "F Cdf" => vec![
             String::from("Lower Bound"),
             String::from("Upper Bound"),
-            String::from("Numerator df"),
-            String::from("Denominator df"),
-        ],
-        "Inverse F" => vec![
-            String::from("Area"),
             String::from("Numerator df"),
             String::from("Denominator df"),
         ],

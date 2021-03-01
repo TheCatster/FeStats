@@ -39,19 +39,16 @@ impl<'a> App<'a> {
                     "Inverse Normal",
                     "t Pdf",
                     "t Cdf",
-                    // TODO: Can't find a proper formula for this
+                    // TODO: Add this in the future, not that easy to do
                     // "Inverse t",
                     "χ2 Pdf",
                     "χ2 Cdf",
-                    // TODO: Can't find a proper formula for this
+                    // TODO: Add this in the future, not that easy to do
                     // "Inverse χ2",
-                    "Binomial Pmf",
+                    "Binomial Pdf",
                     "Binomial Cdf",
-                    "Inverse Binomial",
-                    "Inverse Binomial N",
                     "F Pdf",
                     "F Cdf",
-                    "Inverse F",
                     "Geometric Pdf",
                     "Geometric Cdf",
                     "Poisson Pdf",
