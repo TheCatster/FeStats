@@ -1,9 +1,13 @@
 use crate::app::App;
 use anyhow::Result;
-use probability::{
-    get_binom_cdf, get_binom_pdf, get_chi_square_cdf, get_chi_square_pdf, get_combination,
-    get_f_cdf, get_f_pdf, get_factorial, get_geo_cdf, get_geo_pdf, get_inv_normal, get_normal_cdf,
-    get_normal_pdf, get_permutation, get_poisson_cdf, get_poisson_pdf, get_t_cdf, get_t_pdf,
+use {
+    intervals::{get_t_interval, get_z_interval},
+    probability::{
+        get_binom_cdf, get_binom_pdf, get_chi_square_cdf, get_chi_square_pdf, get_combination,
+        get_f_cdf, get_f_pdf, get_factorial, get_geo_cdf, get_geo_pdf, get_inv_normal,
+        get_normal_cdf, get_normal_pdf, get_permutation, get_poisson_cdf, get_poisson_pdf,
+        get_t_cdf, get_t_pdf,
+    },
 };
 
 pub mod distributions;
@@ -213,6 +217,8 @@ fn match_formula_equations(formula_name: &str, input: &Vec<String>) -> Result<St
         ),
 
         // Intervals Formulas
+        "z Interval" => get_z_interval(),
+
         // Tests Formulas
         _ => Ok(String::from("No formula found with that name!")),
     }
