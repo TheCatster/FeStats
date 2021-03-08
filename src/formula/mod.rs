@@ -15,13 +15,22 @@ pub mod intervals;
 pub mod probability;
 pub mod regressions;
 
+const C_LEVELS: [&str; 3] = ["90", "95", "99"];
+
 pub fn retrieve_formula(formula_name: &str) -> Vec<String> {
     match_formula_inputs(formula_name)
 }
 
 pub fn attempt_formula(formula_name: &str, inputs: &Vec<String>) -> Result<String> {
     if inputs.is_empty() || inputs.len() - 1 < retrieve_formula(formula_name).len() {
-        Ok(String::from("All inputs are not filled yet."))
+        if formula_name.contains("Interval") {
+            Ok(format!(
+                "All inputs are not filled yet. Please select a C-Level of {:?}.",
+                C_LEVELS,
+            ))
+        } else {
+            Ok(String::from("All inputs are not filled yet."))
+        }
     } else {
         if formula_name.contains("Regression") || formula_name.contains("Median-Media") {
             let inputs: &Vec<Vec<String>> = &inputs
@@ -217,7 +226,13 @@ fn match_formula_equations(formula_name: &str, input: &Vec<String>) -> Result<St
         ),
 
         // Intervals Formulas
-        "z Interval" => get_z_interval(),
+        "z Interval" => {
+            if input[3]
+
+            let c_level = input[3].parse::<u64>()?;
+
+            Ok(format!("{:?}", get_z_interval()))
+        }
 
         // Tests Formulas
         _ => Ok(String::from("No formula found with that name!")),
