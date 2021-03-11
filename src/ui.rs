@@ -133,7 +133,7 @@ where
         .split(area);
     let block = Block::default().borders(Borders::ALL).title(formula);
 
-    let mut text = Text::from(Spans::from(format!("{}", outputs)));
+    let mut text = Text::from(outputs);
     let formula_output = Paragraph::new(text)
         .block(Block::default().borders(Borders::ALL).title("Output"))
         .style(Style::default())

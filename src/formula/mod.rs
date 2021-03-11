@@ -25,8 +25,11 @@ pub fn attempt_formula(formula_name: &str, inputs: &Vec<String>) -> Result<Strin
     if inputs.is_empty() || inputs.len() - 1 < retrieve_formula(formula_name).len() {
         if formula_name.contains("Interval") {
             Ok(format!(
-                "All inputs are not filled yet. Please select a C-Level of {:?}.",
-                C_LEVELS,
+                "All inputs are not filled yet.\nPlease select a C-Level of{}.",
+                C_LEVELS
+                    .iter()
+                    .map(|x| format!(" {},", *x))
+                    .collect::<String>()
             ))
         } else {
             Ok(String::from("All inputs are not filled yet."))
@@ -227,11 +230,17 @@ fn match_formula_equations(formula_name: &str, input: &Vec<String>) -> Result<St
 
         // Intervals Formulas
         "z Interval" => {
-            if input[3]
-
-            let c_level = input[3].parse::<u64>()?;
-
-            Ok(format!("{:?}", get_z_interval()))
+            if !C_LEVELS.contains(&&input[3].as_str()) {
+                return Ok(String::from(
+                    "Please select a confidence level from the list.",
+                ));
+            };
+            get_z_interval(
+                input[0].parse::<u64>()?,
+                input[1].parse::<u64>()?,
+                input[2].parse::<u64>()?,
+                input[3].parse::<u64>()?,
+            )
         }
 
         // Tests Formulas
