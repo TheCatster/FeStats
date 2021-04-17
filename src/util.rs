@@ -1,7 +1,12 @@
 use crate::app::App;
-use rand::distributions::{Distribution, Uniform};
-use rand::rngs::ThreadRng;
-use tui::widgets::ListState;
+
+use {
+    rand::{
+        distributions::{Distribution, Uniform},
+        rngs::ThreadRng,
+    },
+    tui::widgets::ListState,
+};
 
 #[derive(Clone)]
 pub struct RandomSignal {

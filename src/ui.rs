@@ -14,9 +14,8 @@ use {
         widgets::{Block, Borders, List, ListItem, Paragraph, Tabs, Wrap},
         Frame,
     },
+    unicode_width::UnicodeWidthStr,
 };
-
-use unicode_width::UnicodeWidthStr;
 
 pub fn draw_main_layout<B>(f: &mut Frame<B>, app: &mut App)
 where

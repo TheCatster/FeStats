@@ -5,10 +5,12 @@ use crate::{
     ui::draw_main_layout,
 };
 
-use anyhow::Result;
-use std::io;
-use termion::{event::Key, input::MouseTerminal, raw::IntoRawMode, screen::AlternateScreen};
-use tui::{backend::TermionBackend, Terminal};
+use {
+  anyhow::Result,
+  std::io,
+  termion::{event::Key, input::MouseTerminal, raw::IntoRawMode, screen::AlternateScreen},
+  tui::{backend::TermionBackend, Terminal}
+};
 
 mod app;
 mod event;

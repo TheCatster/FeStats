@@ -1,5 +1,4 @@
-use anyhow::Result;
-use std::collections::HashMap;
+use {anyhow::Result, std::collections::HashMap};
 
 fn get_z_crit(c_level: u64) -> f64 {
     match c_level {

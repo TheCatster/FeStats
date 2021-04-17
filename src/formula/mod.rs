@@ -1,5 +1,4 @@
 use crate::app::App;
-use anyhow::Result;
 use {
     intervals::{get_t_interval, get_z_interval},
     probability::{
@@ -9,6 +8,8 @@ use {
         get_t_cdf, get_t_pdf,
     },
 };
+
+use anyhow::Result;
 
 pub mod distributions;
 pub mod intervals;
