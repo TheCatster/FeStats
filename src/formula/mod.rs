@@ -1,6 +1,5 @@
 use crate::app::App;
 use {
-    intervals::{get_t_interval, get_z_interval},
     probability::{
         get_binom_cdf, get_binom_pdf, get_chi_square_cdf, get_chi_square_pdf, get_combination,
         get_f_cdf, get_f_pdf, get_factorial, get_geo_cdf, get_geo_pdf, get_inv_normal,
@@ -22,7 +21,7 @@ pub fn retrieve_formula(formula_name: &str) -> Vec<String> {
     match_formula_inputs(formula_name)
 }
 
-pub fn attempt_formula(formula_name: &str, inputs: &Vec<String>) -> Result<String> {
+pub fn attempt_formula(app: &mut App, formula_name: &str, inputs: &Vec<String>) -> Result<String> {
     if inputs.is_empty() || inputs.len() - 1 < retrieve_formula(formula_name).len() {
         if formula_name.contains("Interval") {
             Ok(format!(
@@ -78,12 +77,12 @@ pub fn attempt_formula(formula_name: &str, inputs: &Vec<String>) -> Result<Strin
                     }
                 }
             }
-            match_formula_equations(formula_name, inputs)
+            match_formula_equations(app, formula_name, inputs)
         }
     }
 }
 
-fn match_formula_equations(formula_name: &str, input: &Vec<String>) -> Result<String> {
+fn match_formula_equations(app: &mut App, formula_name: &str, input: &Vec<String>) -> Result<String> {
     match formula_name {
         // Probability Formulas
         "Factorial (!)" => {
@@ -231,17 +230,7 @@ fn match_formula_equations(formula_name: &str, input: &Vec<String>) -> Result<St
 
         // Intervals Formulas
         "z Interval" => {
-            if !C_LEVELS.contains(&&input[3].as_str()) {
-                return Ok(String::from(
-                    "Please select a confidence level from the list.",
-                ));
-            };
-            get_z_interval(
-                input[0].parse::<u64>()?,
-                input[1].parse::<u64>()?,
-                input[2].parse::<u64>()?,
-                input[3].parse::<u64>()?,
-            )
+            Ok(app.test(input[0].parse::<f64>()?))
         }
 
         // Tests Formulas

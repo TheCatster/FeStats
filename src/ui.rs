@@ -74,10 +74,13 @@ where
 {
     let formula_name = app.current_items().current_item().to_owned();
     let current_inputs = app.current_stored_input_ref();
+    let stored_input = app.current_stored_input().to_owned();
     let inputs = retrieve_formula(formula_name);
+    let current_items = app.current_items().current_item().to_owned();
     let outputs = &attempt_formula(
-        app.current_items().current_item(),
-        &app.current_stored_input(),
+        app,
+        current_items,
+        &stored_input,
     )?;
     let chunks = Layout::default()
         .direction(Direction::Horizontal)

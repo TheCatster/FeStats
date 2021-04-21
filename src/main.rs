@@ -6,10 +6,10 @@ use crate::{
 };
 
 use {
-  anyhow::Result,
-  std::io,
-  termion::{event::Key, input::MouseTerminal, raw::IntoRawMode, screen::AlternateScreen},
-  tui::{backend::TermionBackend, Terminal}
+    anyhow::Result,
+    std::io,
+    termion::{event::Key, input::MouseTerminal, raw::IntoRawMode, screen::AlternateScreen},
+    tui::{backend::TermionBackend, Terminal},
 };
 
 mod app;
