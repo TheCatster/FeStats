@@ -1,11 +1,8 @@
 use crate::app::App;
-use {
-    probability::{
-        get_binom_cdf, get_binom_pdf, get_chi_square_cdf, get_chi_square_pdf, get_combination,
-        get_f_cdf, get_f_pdf, get_factorial, get_geo_cdf, get_geo_pdf, get_inv_normal,
-        get_normal_cdf, get_normal_pdf, get_permutation, get_poisson_cdf, get_poisson_pdf,
-        get_t_cdf, get_t_pdf,
-    },
+use probability::{
+    get_binom_cdf, get_binom_pdf, get_chi_square_cdf, get_chi_square_pdf, get_combination,
+    get_f_cdf, get_f_pdf, get_factorial, get_geo_cdf, get_geo_pdf, get_inv_normal, get_normal_cdf,
+    get_normal_pdf, get_permutation, get_poisson_cdf, get_poisson_pdf, get_t_cdf, get_t_pdf,
 };
 
 use anyhow::Result;
@@ -82,7 +79,11 @@ pub fn attempt_formula(app: &mut App, formula_name: &str, inputs: &Vec<String>) 
     }
 }
 
-fn match_formula_equations(app: &mut App, formula_name: &str, input: &Vec<String>) -> Result<String> {
+fn match_formula_equations(
+    app: &mut App,
+    formula_name: &str,
+    input: &Vec<String>,
+) -> Result<String> {
     match formula_name {
         // Probability Formulas
         "Factorial (!)" => {
@@ -229,9 +230,18 @@ fn match_formula_equations(app: &mut App, formula_name: &str, input: &Vec<String
         ),
 
         // Intervals Formulas
-        "z Interval" => {
-            Ok(app.test(input[0].parse::<f64>()?))
-        }
+        "z Interval" => app.get_z_interval(
+            input[0].parse::<f64>()?,
+            input[1].parse::<f64>()?,
+            input[2].parse::<f64>()?,
+            input[3].parse::<f64>()? / 100.0,
+        ),
+        "t Interval" => app.get_t_interval(
+            input[0].parse::<f64>()?,
+            input[1].parse::<f64>()?,
+            input[2].parse::<f64>()? - 1.0,
+            input[3].parse::<f64>()? / 100.0,
+        ),
 
         // Tests Formulas
         _ => Ok(String::from("No formula found with that name!")),
