@@ -242,6 +242,22 @@ fn match_formula_equations(
             input[2].parse::<f64>()? - 1.0,
             input[3].parse::<f64>()? / 100.0,
         ),
+        "2-Sample t Interval" => app.get_2_sample_t_interval(
+            input[0].parse::<f64>()?,
+            input[1].parse::<f64>()?,
+            input[2].parse::<f64>()?,
+            input[3].parse::<f64>()?,
+            input[4].parse::<f64>()?,
+            input[5].parse::<f64>()?,
+            input[6].parse::<f64>()? / 100.0,
+        ),
+        "2-Prop z Interval" => app.get_2_proportion_z_interval(
+            input[0].parse::<f64>()?,
+            input[1].parse::<f64>()?,
+            input[2].parse::<f64>()?,
+            input[3].parse::<f64>()?,
+            input[4].parse::<f64>()? / 100.0,
+        ),
 
         // Tests Formulas
         _ => Ok(String::from("No formula found with that name!")),
@@ -338,17 +354,8 @@ fn match_formula_inputs(formula_name: &str) -> Vec<String> {
         ],
         "t Interval" => vec![
             String::from("x̄"),
-            String::from("Sx"),
+            String::from("σ"),
             String::from("n"),
-            String::from("C Level"),
-        ],
-        "2-Sample z Interval" => vec![
-            String::from("σ1"),
-            String::from("σ2"),
-            String::from("x̄1"),
-            String::from("n1"),
-            String::from("x̄2"),
-            String::from("n2"),
             String::from("C Level"),
         ],
         "2-Sample t Interval" => vec![
@@ -358,11 +365,6 @@ fn match_formula_inputs(formula_name: &str) -> Vec<String> {
             String::from("x̄2"),
             String::from("Sx2"),
             String::from("n2"),
-            String::from("C Level"),
-        ],
-        "1-Prop z Interval" => vec![
-            String::from("Successes, x"),
-            String::from("n"),
             String::from("C Level"),
         ],
         "2-Prop z Interval" => vec![
@@ -404,12 +406,6 @@ fn match_formula_inputs(formula_name: &str) -> Vec<String> {
             String::from("n2"),
             String::from("Alternate Hyp"),
             String::from("Pooled"),
-        ],
-        "1-Prop z Test" => vec![
-            String::from("P0"),
-            String::from("Successes, x"),
-            String::from("n"),
-            String::from("Alternate Hyp"),
         ],
         "2-Prop z Test" => vec![
             String::from("Successes, x1"),
