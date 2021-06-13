@@ -59,9 +59,7 @@ impl<'a> App<'a> {
                 StatefulList::with_items(vec![
                     "z Interval",
                     "t Interval",
-                    "2-Sample z Interval",
                     "2-Sample t Interval",
-                    "1-Prop z Interval",
                     "2-Prop z Interval",
                 ]),
                 StatefulList::with_items(vec![
