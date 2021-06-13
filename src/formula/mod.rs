@@ -7,10 +7,9 @@ use probability::{
 
 use anyhow::Result;
 
-pub mod distributions;
 pub mod intervals;
 pub mod probability;
-pub mod regressions;
+pub mod tests;
 
 const C_LEVELS: [&str; 3] = ["90", "95", "99"];
 
@@ -32,50 +31,22 @@ pub fn attempt_formula(app: &mut App, formula_name: &str, inputs: &Vec<String>) 
             Ok(String::from("All inputs are not filled yet."))
         }
     } else {
-        if formula_name.contains("Regression") || formula_name.contains("Median-Media") {
-            let inputs: &Vec<Vec<String>> = &inputs
-                .iter()
-                .skip(1)
-                .map(|x| {
-                    String::from(x)
-                        .trim()
-                        .split(",")
-                        .map(|x| String::from(x))
-                        .collect()
-                })
-                .collect::<Vec<Vec<String>>>();
-            for input in inputs {
-                for entry in input {
-                    let entry = entry.trim().parse::<f64>();
+        let inputs: &Vec<String> = &inputs.iter().skip(1).map(|x| String::from(x)).collect();
 
-                    match entry {
-                        Ok(_) => {}
-                        Err(_) => {
-                            return Ok(String::from(
-                                "Not all inputs are numbers. Please ensure all numbers are comma
-                                separated and enter them again.",
-                            ))
-                        }
-                    };
+        for input in inputs {
+            let input = input.trim().parse::<f64>();
+
+            match input {
+                Ok(_) => {}
+                Err(_) => {
+                    return Ok(String::from(
+                        "Not all inputs are numbers. Please enter them again.",
+                    ))
                 }
             }
-            match_regressions_formula_equations(formula_name, &inputs[0], &inputs[1])
-        } else {
-            let inputs: &Vec<String> = &inputs.iter().skip(1).map(|x| String::from(x)).collect();
-            for input in inputs {
-                let input = input.trim().parse::<f64>();
-
-                match input {
-                    Ok(_) => {}
-                    Err(_) => {
-                        return Ok(String::from(
-                            "Not all inputs are numbers. Please enter them again.",
-                        ))
-                    }
-                }
-            }
-            match_formula_equations(app, formula_name, inputs)
         }
+        match_formula_equations(app, formula_name, inputs)
+
     }
 }
 
@@ -260,22 +231,8 @@ fn match_formula_equations(
         ),
 
         // Tests Formulas
-        _ => Ok(String::from("No formula found with that name!")),
-    }
-}
+        // "z Test" => app.get_2_proportion_z_interval(x_1, n_1, x_2, n_2, c_level),
 
-fn match_regressions_formula_equations(
-    formula_name: &str,
-    list1: &Vec<String>,
-    list2: &Vec<String>,
-) -> Result<String> {
-    match formula_name {
-        "Linear Regression (mx+b)" => Ok(String::from("This would be your result")),
-        "Linear Regression (a+bx)" => Ok(String::from("This would be your result")),
-        "Median-Median Line" => Ok(String::from("This would be your result")),
-        "Quadratic Regression" => Ok(String::from("This would be your result")),
-        "Cubic Regression" => Ok(String::from("This would be your result")),
-        "Quartic Regression" => Ok(String::from("This would be your result")),
         _ => Ok(String::from("No formula found with that name!")),
     }
 }
@@ -300,16 +257,12 @@ fn match_formula_inputs(formula_name: &str) -> Vec<String> {
             String::from("Upper Bound"),
             String::from("Deg of Freedom, df"),
         ],
-        // TODO: Can't find a proper formula for this yet
-        // "Inverse t" => vec![String::from("Area"), String::from("Deg of Freedom, df")],
         "χ2 Pdf" => vec![String::from("x"), String::from("Deg of Freedom, df")],
         "χ2 Cdf" => vec![
             String::from("Lower Bound"),
             String::from("Upper Bound"),
             String::from("Deg of Freedom, df"),
         ],
-        // TODO: Can't find a proper formula for this yet
-        // "Inverse χ2" => vec![String::from("Area"), String::from("Deg of Freedom, df")],
         "Binomial Pdf" => vec![
             String::from("Num Trials, n"),
             String::from("Prob Success, p"),
@@ -360,10 +313,10 @@ fn match_formula_inputs(formula_name: &str) -> Vec<String> {
         ],
         "2-Sample t Interval" => vec![
             String::from("x̄1"),
-            String::from("Sx1"),
+            String::from("σ1"),
             String::from("n1"),
             String::from("x̄2"),
-            String::from("Sx2"),
+            String::from("σ2"),
             String::from("n2"),
             String::from("C Level"),
         ],
@@ -386,23 +339,16 @@ fn match_formula_inputs(formula_name: &str) -> Vec<String> {
         "t Test" => vec![
             String::from("µ0"),
             String::from("x̄"),
-            String::from("Sx"),
-            String::from("n"),
-            String::from("Alternate Hyp"),
-        ],
-        "2-Sample z Test" => vec![
-            String::from("µ0"),
-            String::from("x̄"),
-            String::from("Sx"),
+            String::from("σ"),
             String::from("n"),
             String::from("Alternate Hyp"),
         ],
         "2-Sample t Test" => vec![
             String::from("x̄1"),
-            String::from("Sx1"),
+            String::from("σ1"),
             String::from("n1"),
             String::from("x̄2"),
-            String::from("Sx2"),
+            String::from("σ2"),
             String::from("n2"),
             String::from("Alternate Hyp"),
             String::from("Pooled"),
@@ -414,34 +360,6 @@ fn match_formula_inputs(formula_name: &str) -> Vec<String> {
             String::from("n2"),
             String::from("Alternate Hyp"),
         ],
-        "χ2 GOF" => vec![
-            String::from("Observed List"),
-            String::from("Expected List"),
-            String::from("Deg of Freedom, df"),
-        ],
-        "χ2 2-way Test" => vec![String::from("Observed Matrix")],
-        "2-Sample F Test" => vec![
-            String::from("Sx1"),
-            String::from("n1"),
-            String::from("Sx2"),
-            String::from("n2"),
-            String::from("Alternate Hyp"),
-        ],
-        "ANOVA" => vec![
-            String::from("Number of Groups"),
-            String::from("Group - {n}"),
-            String::from("Group - {x̄}"),
-            String::from("Group - Sx"),
-        ],
-
-        // Regressions Formulas
-        "Linear Regression (mx+b)" => vec![String::from("X List"), String::from("Y List")],
-        "Linear Regression (a+bx)" => vec![String::from("X List"), String::from("Y List")],
-        "Median-Median Line" => vec![String::from("X List"), String::from("Y List")],
-        "Quadratic Regression" => vec![String::from("X List"), String::from("Y List")],
-        "Cubic Regression" => vec![String::from("X List"), String::from("Y List")],
-        "Quartic Regression" => vec![String::from("X List"), String::from("Y List")],
-
         _ => vec![String::from("No formula found with that name!")],
     }
 }
