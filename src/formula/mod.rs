@@ -1,12 +1,8 @@
 use crate::app::App;
-use {
-    intervals::{get_t_interval, get_z_interval},
-    probability::{
-        get_binom_cdf, get_binom_pdf, get_chi_square_cdf, get_chi_square_pdf, get_combination,
-        get_f_cdf, get_f_pdf, get_factorial, get_geo_cdf, get_geo_pdf, get_inv_normal,
-        get_normal_cdf, get_normal_pdf, get_permutation, get_poisson_cdf, get_poisson_pdf,
-        get_t_cdf, get_t_pdf,
-    },
+use probability::{
+    get_binom_cdf, get_binom_pdf, get_chi_square_cdf, get_chi_square_pdf, get_combination,
+    get_f_cdf, get_f_pdf, get_factorial, get_geo_cdf, get_geo_pdf, get_inv_normal, get_normal_cdf,
+    get_normal_pdf, get_permutation, get_poisson_cdf, get_poisson_pdf, get_t_cdf, get_t_pdf,
 };
 
 use anyhow::Result;
@@ -22,7 +18,7 @@ pub fn retrieve_formula(formula_name: &str) -> Vec<String> {
     match_formula_inputs(formula_name)
 }
 
-pub fn attempt_formula(formula_name: &str, inputs: &Vec<String>) -> Result<String> {
+pub fn attempt_formula(app: &mut App, formula_name: &str, inputs: &Vec<String>) -> Result<String> {
     if inputs.is_empty() || inputs.len() - 1 < retrieve_formula(formula_name).len() {
         if formula_name.contains("Interval") {
             Ok(format!(
@@ -78,12 +74,16 @@ pub fn attempt_formula(formula_name: &str, inputs: &Vec<String>) -> Result<Strin
                     }
                 }
             }
-            match_formula_equations(formula_name, inputs)
+            match_formula_equations(app, formula_name, inputs)
         }
     }
 }
 
-fn match_formula_equations(formula_name: &str, input: &Vec<String>) -> Result<String> {
+fn match_formula_equations(
+    app: &mut App,
+    formula_name: &str,
+    input: &Vec<String>,
+) -> Result<String> {
     match formula_name {
         // Probability Formulas
         "Factorial (!)" => {
@@ -230,19 +230,34 @@ fn match_formula_equations(formula_name: &str, input: &Vec<String>) -> Result<St
         ),
 
         // Intervals Formulas
-        "z Interval" => {
-            if !C_LEVELS.contains(&&input[3].as_str()) {
-                return Ok(String::from(
-                    "Please select a confidence level from the list.",
-                ));
-            };
-            get_z_interval(
-                input[0].parse::<u64>()?,
-                input[1].parse::<u64>()?,
-                input[2].parse::<u64>()?,
-                input[3].parse::<u64>()?,
-            )
-        }
+        "z Interval" => app.get_z_interval(
+            input[0].parse::<f64>()?,
+            input[1].parse::<f64>()?,
+            input[2].parse::<f64>()?,
+            input[3].parse::<f64>()? / 100.0,
+        ),
+        "t Interval" => app.get_t_interval(
+            input[0].parse::<f64>()?,
+            input[1].parse::<f64>()?,
+            input[2].parse::<f64>()? - 1.0,
+            input[3].parse::<f64>()? / 100.0,
+        ),
+        "2-Sample t Interval" => app.get_2_sample_t_interval(
+            input[0].parse::<f64>()?,
+            input[1].parse::<f64>()?,
+            input[2].parse::<f64>()?,
+            input[3].parse::<f64>()?,
+            input[4].parse::<f64>()?,
+            input[5].parse::<f64>()?,
+            input[6].parse::<f64>()? / 100.0,
+        ),
+        "2-Prop z Interval" => app.get_2_proportion_z_interval(
+            input[0].parse::<f64>()?,
+            input[1].parse::<f64>()?,
+            input[2].parse::<f64>()?,
+            input[3].parse::<f64>()?,
+            input[4].parse::<f64>()? / 100.0,
+        ),
 
         // Tests Formulas
         _ => Ok(String::from("No formula found with that name!")),
@@ -339,17 +354,8 @@ fn match_formula_inputs(formula_name: &str) -> Vec<String> {
         ],
         "t Interval" => vec![
             String::from("x̄"),
-            String::from("Sx"),
+            String::from("σ"),
             String::from("n"),
-            String::from("C Level"),
-        ],
-        "2-Sample z Interval" => vec![
-            String::from("σ1"),
-            String::from("σ2"),
-            String::from("x̄1"),
-            String::from("n1"),
-            String::from("x̄2"),
-            String::from("n2"),
             String::from("C Level"),
         ],
         "2-Sample t Interval" => vec![
@@ -359,11 +365,6 @@ fn match_formula_inputs(formula_name: &str) -> Vec<String> {
             String::from("x̄2"),
             String::from("Sx2"),
             String::from("n2"),
-            String::from("C Level"),
-        ],
-        "1-Prop z Interval" => vec![
-            String::from("Successes, x"),
-            String::from("n"),
             String::from("C Level"),
         ],
         "2-Prop z Interval" => vec![
@@ -405,12 +406,6 @@ fn match_formula_inputs(formula_name: &str) -> Vec<String> {
             String::from("n2"),
             String::from("Alternate Hyp"),
             String::from("Pooled"),
-        ],
-        "1-Prop z Test" => vec![
-            String::from("P0"),
-            String::from("Successes, x"),
-            String::from("n"),
-            String::from("Alternate Hyp"),
         ],
         "2-Prop z Test" => vec![
             String::from("Successes, x1"),

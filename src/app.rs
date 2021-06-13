@@ -1,4 +1,5 @@
 use crate::util::{StatefulList, TabsState};
+use inline_python::{python, Context};
 
 pub enum InputMode {
     Normal,
@@ -13,6 +14,7 @@ pub struct App<'a> {
     pub entered_inputs: Vec<Vec<String>>,
     pub should_quit: bool,
     pub tabs: TabsState<'a>,
+    pub python: Context,
 }
 
 impl<'a> App<'a> {
@@ -57,9 +59,7 @@ impl<'a> App<'a> {
                 StatefulList::with_items(vec![
                     "z Interval",
                     "t Interval",
-                    "2-Sample z Interval",
                     "2-Sample t Interval",
-                    "1-Prop z Interval",
                     "2-Prop z Interval",
                 ]),
                 StatefulList::with_items(vec![
@@ -83,6 +83,7 @@ impl<'a> App<'a> {
                     "Quartic Regression",
                 ]),
             ],
+            python: Context::new(),
         }
     }
 

@@ -5,6 +5,7 @@
 
 ## About FeStats (read: IronStats)
 FeStats is a TUI statistics program, covering hypothesis tests, regressions, and probability. 
+It uses `inline-python` and `pyo3` to provide access to `scipy`. 
 
 ## Usage
 
@@ -24,11 +25,19 @@ FeStats is a TUI statistics program, covering hypothesis tests, regressions, and
 
 - [ ] Handle list operations (such as for regressions)
 
-### Support:
+## Building:
 
-The best way to support FeStats is to contribute! Feel free to make PRs, open issues, and help us make this the best utility we can! If you're interested in adding a feature, simply open an issue.
+In order to build FeStats, you must have `python3` installed, and use the `nightly` Rust toolchain.
 
-### License:
+## Support:
+
+The best way to support FeStats is to contribute! Feel free to make PRs, open issues, 
+and help us make this the best utility we can! If you're interested in adding a feature, simply open an issue.
+
+Please ensure that your issue is not a duplicate, and include a minimal reproducible example so that we can help you
+further debug your issue.
+
+## License:
 
 Distributed under the GNU Public License (GPLv3) (See accompanying file LICENSE)
 
