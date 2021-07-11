@@ -1,0 +1,14 @@
+[package]
+name = "festats"
+version = "0.1.0"
+authors = ["Daniel Rose <danielrose@member.fsf.org>"]
+edition = "2018"
+
+[dependencies]
+termion = "*"
+tui = "0.14"
+rand = "0.8"
+unicode-width = "0.1"
+anyhow = "1"
+statrs = "0.13"
+inline-python = "0.6"
